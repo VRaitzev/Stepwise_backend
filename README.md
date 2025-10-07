@@ -12,23 +12,23 @@ Stepwise Backend — асинхронный FastAPI-сервис с CRUD, JWT-а
 ## Быстрый старт
 
 1. Клонирование репозитория и переход в папку:
-    
+    ```git
     git clone https://github.com/yourusername/stepwise-backend.git
     cd stepwise-backend
-
+    ```
 2. Создание и активация виртуального окружения (пример для Linux/macOS):
-
+    ```bash
     python -m venv venv
     source venv/bin/activate
-
+    ```
 3. Установка зависимостей:
-
+    ```bash
     poetry install    # либо: pip install -r requirements.txt
-
+    ```
 4. Запуск development-сервера:
-
+    ```bash
     uvicorn app.main:app --reload
-
+    ```
 API будет доступно по адресу: http://localhost:8000  
 Документация:  
 - Swagger UI: http://localhost:8000/docs  
@@ -248,17 +248,45 @@ API будет доступно по адресу: http://localhost:8000
 
 ## Docker и деплой
 
-Пример `Dockerfile` (минимальный образ):
+Пример `Dockerfile` :
+```docker
+# Используем официальный Python образ
+FROM python:3.11-slim
 
-    FROM python:3.11-slim
+# Устанавливаем необходимые системные зависимости
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-    WORKDIR /app
-    COPY pyproject.toml poetry.lock ./
-    RUN pip install poetry && poetry install --no-root
+# Устанавливаем Poetry (менеджер зависимостей)
+RUN curl -sSL https://install.python-poetry.org | python3 -
 
-    COPY . .
-    CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Добавляем путь к Poetry в PATH
+ENV PATH="/root/.local/bin:$PATH"
 
+# Создаём рабочую директорию в контейнере
+WORKDIR /app
+
+# Копируем скрипт wait-for-it.sh
+COPY wait-for-it.sh /app/wait-for-it.sh
+
+# Копируем файлы проекта
+COPY . /app/
+
+# Устанавливаем зависимости через Poetry
+RUN poetry install --no-interaction --no-ansi
+
+# Строка подключения к базе данных
+ENV DATABASE_URL=postgresql+asyncpg://application_user:application_user_password@postgres:5432/my_plan_application_db
+
+# Делаем скрипт wait-for-it.sh исполнимым
+RUN chmod +x /app/wait-for-it.sh
+
+# Запускаем приложение через Uvicorn
+CMD ["/app/wait-for-it.sh", "postgres:5432", "--", "poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
 Миграции Alembic:
 - Создание: `alembic revision --autogenerate -m "init"`  
 - Применение: `alembic upgrade head`
@@ -282,3 +310,4 @@ API будет доступно по адресу: http://localhost:8000
 - Background tasks (Celery/BackgroundTasks) для тяжёлых операций.  
 - Rate limiting (защита от злоупотреблений).  
 - Миграция на Type Hints / stricter typing и добавление тестов покрытия.
+

@@ -5,35 +5,34 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791)](https://postgresql.org)
 [![JWT](https://img.shields.io/badge/JWT-Auth-orange)](https://jwt.io)
 
-Высокопроизводительный FastAPI бэкенд для платформы саморазвития Stepwise — асинхронная архитектура с полной CRUD функциональностью, безопасной JWT-аутентификацией и чистым модульным кодом.
+Stepwise Backend — асинхронный FastAPI-сервис с CRUD, JWT-аутентификацией и модульной структурой.
 
 ---
 
 ## Быстрый старт
 
-### Установка и запуск
-
-    # Клонирование репозитория
+1. Клонирование репозитория и переход в папку:
+    
     git clone https://github.com/yourusername/stepwise-backend.git
     cd stepwise-backend
 
-    # Создание виртуального окружения
+2. Создание и активация виртуального окружения (пример для Linux/macOS):
+
     python -m venv venv
-    source venv/bin/activate  # Linux/Mac
-    # venv\Scripts\activate   # Windows
+    source venv/bin/activate
 
-    # Установка зависимостей
-    poetry install  # или pip install -r requirements.txt
+3. Установка зависимостей:
 
-    # Запуск development сервера
+    poetry install    # либо: pip install -r requirements.txt
+
+4. Запуск development-сервера:
+
     uvicorn app.main:app --reload
 
-API доступно по адресу:
-http://localhost:8000
-
-Документация:
-- Swagger UI → http://localhost:8000/docs
-- ReDoc → http://localhost:8000/redoc
+API будет доступно по адресу: http://localhost:8000  
+Документация:  
+- Swagger UI: http://localhost:8000/docs  
+- ReDoc: http://localhost:8000/redoc
 
 ---
 
@@ -43,187 +42,202 @@ http://localhost:8000
     ├── app/                      # Основное приложение
     │   ├── __pycache__/          # Скомпилированные Python файлы
     │   ├── auth/                 # Аутентификация и авторизация (JWT, bcrypt)
-    │   ├── core/                 # Базовые настройки (config, database, utils)
-    │   ├── models/               # SQLAlchemy модели базы данных
-    │   ├── routers/              # API endpoints (роутеры FastAPI)
-    │   ├── tests/                # Тесты и вспомогательные скрипты
-    │   │   ├── __init__.py
-    │   │   ├── create_tables_async.py
-    │   │   └── default_data.py
-    │   ├── main.py               # Точка входа в приложение
-    │   └── default_data.py       # Скрипт начальных данных
-    ├── migrations/               # Alembic миграции базы данных
-    ├── .gitignore                # Исключения для Git
-    ├── Dockerfile                # Конфигурация контейнера
-    ├── README.md                 # Документация проекта
-    ├── alembic.ini               # Настройки Alembic
-    ├── poetry.lock               # Lock-файл зависимостей Poetry
-    ├── pyproject.toml            # Конфигурация зависимостей Poetry
-    └── wait-for-it.sh            # Скрипт ожидания готовности БД (Docker Compose)
+    │   ├── core/                 # Конфигурация (database, config)
+    │   ├── models/               # SQLAlchemy модели
+    │   ├── routers/              # Роутеры FastAPI (endpoints)
+    │   ├── tests/                # Тесты и скрипты подготовки данных
+    │   ├── main.py               # Точка входа приложения
+    │   └── default_data.py       # Скрипт для заполнения начальными данными
+    ├── migrations/               # Alembic миграции
+    ├── Dockerfile                # Docker-конфигурация
+    ├── pyproject.toml / requirements.txt
+    ├── alembic.ini
+    └── README.md
 
-Описание ключевых папок:
-- app/auth: логика аутентификации, генерация и верификация JWT, хэширование паролей.
-- app/core: конфигурация приложения, подключение к базе, общие утилиты.
-- app/models: определения моделей SQLAlchemy (Pydantic схемы рядом при необходимости).
-- app/routers: разделение по функциональным модулям API (users, physicalPlans, mentalPlans, resources, otherTasks).
-- app/tests: тесты и вспомогательные скрипты для локальной и CI проверки.
-- migrations: скрипты Alembic для управления схемой БД.
+Краткое назначение папок:
+- `app/auth` — логика регистрации/логина, создание и верификация JWT, хэширование паролей.  
+- `app/core` — подключение к БД, общие настройки и утилиты.  
+- `app/models` — описания сущностей базы данных (SQLAlchemy).  
+- `app/routers` — разбиение API по функциональным областям (users, physicalPlans, mentalPlans, resources, otherTasks).  
+- `migrations` — Alembic для версионирования схемы БД.
 
 ---
 
-## Технологический стек
+## Модели и связи (актуально для этой версии)
 
-Core:
-- FastAPI — асинхронный фреймворк
-- Pydantic — валидация и схемы
-- Uvicorn — ASGI сервер
+Ниже — аккуратно оформленное описание моделей и их полей/связей в проекте. Это не код, а документация для README — можно прямо использовать как reference.
 
-Database & ORM:
-- SQLAlchemy 2.0 (async)
-- PostgreSQL
-- Alembic для миграций
-
-Authentication & Security:
-- JWT для аутентификации
-- BCrypt для хэширования паролей
-- CORS middleware
-
-Development:
-- Python 3.11+
-- Type hints
-- Docker
-- Poetry или pip
-
----
-
-## API Endpoints
-
-Аутентификация (префикс /users/):
-    POST /users/              # Регистрация нового пользователя
-    POST /users/signIn        # Вход в систему (возврат JWT)
-
-Фитнес планы (префикс /physicalPlans/):
-    POST /physicalPlans/      # Создание фитнес-плана
-    PATCH /physicalPlans/{id} # Обновление плана
-    GET /users/{id}/physical-plan  # Получение плана пользователя
-
-Ментальные планы (префикс /mentalPlans/):
-    POST /mentalPlans/        # Создание образовательного плана
-    PATCH /mentalPlans/{id}   # Обновление плана
-    GET /users/{id}/mental-plan    # Получение плана пользователя
-
-Ресурсы (префикс /resources/):
-    POST /resources/          # Создание ресурса (книга/видео/курс)
-    POST /resources/bulk/     # Массовое создание ресурсов
-    PATCH /resources/{id}     # Обновление ресурса и прогресса
-    DELETE /resources/{id}    # Удаление ресурса
-
-Задачи (префикс /outherTasks/):
-    GET /outherTasks/         # Получение всех задач
-    POST /outherTasks/        # Создание задачи
-    PATCH /outherTasks/{id}   # Обновление задачи
-    DELETE /outherTasks/{id}  # Удаление задачи
-
----
-
-## Модели базы данных (кратко)
-
-    # User — Пользователи
-    class User(Base):
-        id: int
-        login: str
-        password: str
-
-    # PhysicalPlan — Фитнес планы
-    class PhysicalPlan(Base):
-        user_id: int
-        goal: str
-        age: int
-        gender: str
-        weight: float
-        height: float
-        bmi: float
-        progress: int
-
-    # MentalPlan — Образовательные планы
-    class MentalPlan(Base):
-        user_id: int
-        name: str
-        goal: str
-
-    # Resource — Ресурсы (книги/видео/курсы)
-    class Resource(Base):
-        type: str
-        name: str
-        description: str
-        volume: int
-
-    # OuterTask — Дополнительные задачи
-    class OuterTask(Base):
-        user_id: int
-        title: str
-        status: bool
+### User
+- `id` — integer, PK  
+- `login` — string, уникальный, обязательный  
+- `password` — string, обязательный (хранить как хэш)  
+- `created_at` — timestamp, по умолчанию `now`
 
 Связи:
-- User 1:1 PhysicalPlan
-- User 1:1 MentalPlan
-- MentalPlan 1:M MentalPlanResource
-- PhysicalPlan 1:M Workout
-- Workout M:M Exercise
+- `physical_plans` — one-to-many к `PhysicalPlan`  
+- `mental_plans` — one-to-many к `MentalPlan`  
+- `tasks` — one-to-many к `OuterTask`
+
+---
+
+### PhysicalPlan
+- `id` — integer, PK  
+- `user_id` — FK → `users.id`  
+- `goal` — string, обязательное поле  
+- `age` — integer  
+- `gender` — enum (`male`, `female`)  
+- `weight` — float  
+- `height` — float  
+- `bmi` — float, опционально  
+- `progress` — float, по умолчанию 0.0  
+- `day` — integer, текущий день/этап плана
+
+Связи:
+- `user` — many-to-one к `User`  
+- `workouts` — one-to-many к `Workout`
+
+---
+
+### Workout
+- `id` — integer, PK  
+- `physical_plan_id` — FK → `physical_plans.id`  
+- `day_of_week` — integer (номер дня)
+
+Связи:
+- `physical_plan` — many-to-one к `PhysicalPlan`  
+- `exercises` — one-to-many к `WorkoutExercise`
+
+---
+
+### Exercise
+- `id` — integer, PK  
+- `name` — string  
+- `calories_burned` — float  
+- `description` — text, опционально  
+- `start_reps` — integer  
+- `end_reps` — integer  
+- `step` — integer
+
+---
+
+### WorkoutExercise
+- `id` — integer, PK  
+- `workout_id` — FK → `workouts.id`  
+- `exercise_id` — FK → `exercises.id`
+
+Связи:
+- `workout` — many-to-one к `Workout`  
+- `exercise` — many-to-one к `Exercise`
+
+---
+
+### MentalPlan
+- `id` — integer, PK  
+- `user_id` — FK → `users.id`  
+- `name` — string, обязательное  
+- `goal` — string, обязательное  
+- `progress` — integer, по умолчанию 30
+
+Связи:
+- `user` — many-to-one к `User`  
+- `resources` — one-to-many к `MentalPlanResource`
+
+---
+
+### Resource
+- `id` — integer, PK  
+- `type` — enum (`book`, `course`, `video`)  
+- `name` — string, обязательное  
+- `description` — string, обязательное  
+- `volume` — float (объём, длительность или количество страниц и т.д.)
+
+---
+
+### MentalPlanResource
+- `id` — integer, PK  
+- `mental_plan_id` — FK → `mental_plans.id`  
+- `resource_id` — FK → `resources.id`  
+- `progress` — float, по умолчанию 0.0
+
+Связи:
+- `mental_plan` — many-to-one к `MentalPlan`  
+- `resource` — many-to-one к `Resource`
+
+---
+
+### OuterTask
+- `id` — integer, PK, autoincrement  
+- `user_id` — FK → `users.id`  
+- `title` — string, обязательное  
+- `status` — boolean, по умолчанию `false`
+
+Связи:
+- `user` — many-to-one к `User`
+
+---
+
+## Схема связей (кратко)
+- `User` 1:N `PhysicalPlan`  
+- `User` 1:N `MentalPlan`  
+- `User` 1:N `OuterTask`  
+- `PhysicalPlan` 1:N `Workout`  
+- `Workout` 1:N `WorkoutExercise`  
+- `Exercise` 1:N `WorkoutExercise`  
+- `MentalPlan` 1:N `MentalPlanResource`  
+- `Resource` 1:N `MentalPlanResource`
+
+---
+
+## API (основные эндпоинты)
+
+Аутентификация (`/users/`):
+- `POST /users/` — регистрация  
+- `POST /users/signIn` — логин, возврат JWT
+
+Фитнес-планы (`/physicalPlans/`):
+- `POST /physicalPlans/` — создать план  
+- `PATCH /physicalPlans/{id}` — обновить план  
+- `GET /users/{id}/physical-plan` — получить план пользователя
+
+Ментальные планы (`/mentalPlans/`):
+- `POST /mentalPlans/` — создать план  
+- `PATCH /mentalPlans/{id}` — обновить план  
+- `GET /users/{id}/mental-plan` — получить план пользователя
+
+Ресурсы (`/resources/`):
+- `POST /resources/` — создать ресурс  
+- `POST /resources/bulk/` — массовое создание  
+- `PATCH /resources/{id}` — обновление ресурса / прогресса  
+- `DELETE /resources/{id}` — удалить ресурс
+
+Задачи (`/outherTasks/`):
+- `GET /outherTasks/`  
+- `POST /outherTasks/`  
+- `PATCH /outherTasks/{id}`  
+- `DELETE /outherTasks/{id}`
 
 ---
 
 ## Аутентификация и безопасность
 
-JWT:
-    # Создание токена
-    access_token = create_access_token(username)
-
-    # Защита эндпоинтов через Depends
-    @router.get("/protected")
-    async def protected_route(user: str = Depends(authenticate)):
-        return {"user": user}
-
-Хэширование паролей:
-    # Создание хэша
-    hashed_password = hash_password.create_hash(plain_password)
-
-    # Проверка пароля
-    is_valid = hash_password.verify_hash(plain_password, hashed_password)
-
-CORS:
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # В production указать конкретные домены
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
+- JWT для авторизации; токен создаётся на логине и используется в заголовке `Authorization: Bearer <token>`.  
+- Пароли хранятся в виде хэшей (bcrypt).  
+- Endpoints защищаются через зависимость (Depends) и валидацию токена.  
+- CORS: в development допускаются все источники, в production указывать конкретные домены.
 
 ---
 
-## Асинхронные операции и оптимизация запросов
+## Асинхронность и оптимизация
 
-    # Асинхронная сессия SQLAlchemy
-    async with db.begin():
-        db.add(new_object)
-        await db.commit()
-
-    # Оптимизированный запрос с joinedload
-    query = await db.execute(
-        select(User)
-        .options(joinedload(User.physical_plan))
-        .where(User.id == user_id)
-    )
-
-Рекомендации:
-- Использовать connection pooling
-- Применять eager loading для связанных сущностей
-- Кэшировать частые запросы (Redis) при необходимости
+Рекомендации по БД и ORM:
+- Использовать асинхронную работу SQLAlchemy 2.0 + asyncpg для PostgreSQL.  
+- Применять connection pooling и eager-loading (joinedload) для избежания N+1.  
+- Кэшировать тяжёлые/часто используемые запросы (Redis) при необходимости.  
+- Писать оптимизированные запросы, минимизируя количество round-trip к БД.
 
 ---
 
-## Конфигурация и переменные окружения
+## Конфигурация (пример `.env`)
 
     DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/stepwise
     JWT_SECRET_KEY=your-super-secret-key
@@ -234,7 +248,7 @@ CORS:
 
 ## Docker и деплой
 
-Dockerfile (пример):
+Пример `Dockerfile` (минимальный образ):
 
     FROM python:3.11-slim
 
@@ -245,33 +259,26 @@ Dockerfile (пример):
     COPY . .
     CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 
-Миграции:
-    # Создание миграций
-    alembic revision --autogenerate -m "init"
-
-    # Применение миграций
-    alembic upgrade head
+Миграции Alembic:
+- Создание: `alembic revision --autogenerate -m "init"`  
+- Применение: `alembic upgrade head`
 
 ---
 
-## Производительность и мониторинг
+## Мониторинг и производительность
 
-- Асинхронные операции (async/await)
-- Connection pooling
-- Eager loading для избежания N+1
-- Pydantic валидация на уровне схем
-- Возможная интеграция Redis, Prometheus, Grafana
-
----
-
-## Планы развития
-
-- Redis для кэширования
-- WebSocket для real-time уведомлений
-- Background tasks для тяжелых операций
-- Rate limiting и защита от DDoS
-- Мониторинг и метрики
+- Асинхронные обработчики (async/await).  
+- Connection pooling для PostgreSQL.  
+- Eager loading и оптимизированные JOIN'ы.  
+- Pydantic-схемы для быстрой и корректной валидации.  
+- План интеграции Redis, Prometheus и Grafana.
 
 ---
 
-Stepwise Backend — мощный и масштабируемый API.
+## Roadmap / планы развития
+
+- Redis для кэширования и ускорения ответов.  
+- WebSocket / SSE для real-time уведомлений.  
+- Background tasks (Celery/BackgroundTasks) для тяжёлых операций.  
+- Rate limiting (защита от злоупотреблений).  
+- Миграция на Type Hints / stricter typing и добавление тестов покрытия.

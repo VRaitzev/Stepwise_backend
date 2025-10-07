@@ -13,7 +13,7 @@ Stepwise Backend — асинхронный FastAPI-сервис с CRUD, JWT-а
 
 1. Клонирование репозитория и переход в папку:
     ```git
-    git clone https://github.com/yourusername/stepwise-backend.git
+    git clone https://[https://github.com/VRaitzev/Stepwise_backend].git
     cd stepwise-backend
     ```
 2. Создание и активация виртуального окружения (пример для Linux/macOS):
@@ -310,4 +310,5 @@ CMD ["/app/wait-for-it.sh", "postgres:5432", "--", "poetry", "run", "uvicorn", "
 - Background tasks (Celery/BackgroundTasks) для тяжёлых операций.  
 - Rate limiting (защита от злоупотреблений).  
 - Миграция на Type Hints / stricter typing и добавление тестов покрытия.
+
 

@@ -1,315 +1,114 @@
-# Stepwise Backend - FastAPI Development
+# Stepwise Backend: Asynchronous Lifestyle & Productivity API
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688)](https://fastapi.tiangolo.com)
-[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-d71f00)](https://sqlalchemy.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791)](https://postgresql.org)
-[![JWT](https://img.shields.io/badge/JWT-Auth-orange)](https://jwt.io)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-d71f00?logo=sqlalchemy&logoColor=white)](https://sqlalchemy.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-336791?logo=postgresql&logoColor=white)](https://postgresql.org)
+[![JWT](https://img.shields.io/badge/JWT-Auth-orange?logo=jsonwebtokens&logoColor=white)](https://jwt.io)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 
-Stepwise Backend — асинхронный FastAPI-сервис с CRUD, JWT-аутентификацией и модульной структурой.
-
----
-
-## Быстрый старт
-
-1. Клонирование репозитория и переход в папку:
-    ```git
-    git clone https://github.com/VRaitzev/Stepwise_backend.git
-    cd stepwise-backend
-    ```
-2. Создание и активация виртуального окружения (пример для Linux/macOS):
-    ```bash
-    python -m venv venv
-    source venv/bin/activate
-    ```
-3. Установка зависимостей:
-    ```bash
-    poetry install    # либо: pip install -r requirements.txt
-    ```
-4. Запуск development-сервера:
-    ```bash
-    uvicorn app.main:app --reload
-    ```
-API будет доступно по адресу: http://localhost:8000  
-Документация:  
-- Swagger UI: http://localhost:8000/docs  
-- ReDoc: http://localhost:8000/redoc
+**Stepwise Backend** is a high-performance, asynchronous REST API built with FastAPI. It serves as the core engine for a lifestyle management platform, handling complex relational data for physical fitness, mental wellness, and task tracking.
 
 ---
 
-## Архитектура проекта
+## 🚀 Key Features
 
-    project-root/
-    ├── app/                      # Основное приложение
-    │   ├── __pycache__/          # Скомпилированные Python файлы
-    │   ├── auth/                 # Аутентификация и авторизация (JWT, bcrypt)
-    │   ├── core/                 # Конфигурация (database, config)
-    │   ├── models/               # SQLAlchemy модели
-    │   ├── routers/              # Роутеры FastAPI (endpoints)
-    │   ├── tests/                # Тесты и скрипты подготовки данных
-    │   ├── main.py               # Точка входа приложения
-    │   └── default_data.py       # Скрипт для заполнения начальными данными
-    ├── migrations/               # Alembic миграции
-    ├── Dockerfile                # Docker-конфигурация
-    ├── pyproject.toml / requirements.txt
-    ├── alembic.ini
-    └── README.md
-
-Краткое назначение папок:
-- `app/auth` — логика регистрации/логина, создание и верификация JWT, хэширование паролей.  
-- `app/core` — подключение к БД, общие настройки и утилиты.  
-- `app/models` — описания сущностей базы данных (SQLAlchemy).  
-- `app/routers` — разбиение API по функциональным областям (users, physicalPlans, mentalPlans, resources, otherTasks).  
-- `migrations` — Alembic для версионирования схемы БД.
+- **Full Async Pipeline:** Leverages `FastAPI`, `SQLAlchemy 2.0` (async), and `asyncpg` for non-blocking I/O operations.
+- **Robust Security:** JWT-based authentication with `bcrypt` password hashing and secure dependency injection.
+- **Relational Complexity:** Sophisticated database schema with one-to-many and many-to-many relationships.
+- **Scalable Architecture:** Clean, modular project structure following industry best practices.
+- **DevOps Ready:** Fully containerized with Docker and version-controlled database migrations via Alembic.
 
 ---
 
-## Модели и связи (актуально для этой версии)
+## 🏗️ Project Architecture
 
-Ниже — аккуратно оформленное описание моделей и их полей/связей в проекте. Это не код, а документация для README — можно прямо использовать как reference.
+The system follows a modular design to ensure high maintainability and testability:
 
-### User
-- `id` — integer, PK  
-- `login` — string, уникальный, обязательный  
-- `password` — string, обязательный (хранить как хэш)  
-- `created_at` — timestamp, по умолчанию `now`
-
-Связи:
-- `physical_plans` — one-to-many к `PhysicalPlan`  
-- `mental_plans` — one-to-many к `MentalPlan`  
-- `tasks` — one-to-many к `OuterTask`
-
----
-
-### PhysicalPlan
-- `id` — integer, PK  
-- `user_id` — FK → `users.id`  
-- `goal` — string, обязательное поле  
-- `age` — integer  
-- `gender` — enum (`male`, `female`)  
-- `weight` — float  
-- `height` — float  
-- `bmi` — float, опционально  
-- `progress` — float, по умолчанию 0.0  
-- `day` — integer, текущий день/этап плана
-
-Связи:
-- `user` — many-to-one к `User`  
-- `workouts` — one-to-many к `Workout`
-
----
-
-### Workout
-- `id` — integer, PK  
-- `physical_plan_id` — FK → `physical_plans.id`  
-- `day_of_week` — integer (номер дня)
-
-Связи:
-- `physical_plan` — many-to-one к `PhysicalPlan`  
-- `exercises` — one-to-many к `WorkoutExercise`
-
----
-
-### Exercise
-- `id` — integer, PK  
-- `name` — string  
-- `calories_burned` — float  
-- `description` — text, опционально  
-- `start_reps` — integer  
-- `end_reps` — integer  
-- `step` — integer
-
----
-
-### WorkoutExercise
-- `id` — integer, PK  
-- `workout_id` — FK → `workouts.id`  
-- `exercise_id` — FK → `exercises.id`
-
-Связи:
-- `workout` — many-to-one к `Workout`  
-- `exercise` — many-to-one к `Exercise`
-
----
-
-### MentalPlan
-- `id` — integer, PK  
-- `user_id` — FK → `users.id`  
-- `name` — string, обязательное  
-- `goal` — string, обязательное  
-- `progress` — integer, по умолчанию 30
-
-Связи:
-- `user` — many-to-one к `User`  
-- `resources` — one-to-many к `MentalPlanResource`
-
----
-
-### Resource
-- `id` — integer, PK  
-- `type` — enum (`book`, `course`, `video`)  
-- `name` — string, обязательное  
-- `description` — string, обязательное  
-- `volume` — float (объём, длительность или количество страниц и т.д.)
-
----
-
-### MentalPlanResource
-- `id` — integer, PK  
-- `mental_plan_id` — FK → `mental_plans.id`  
-- `resource_id` — FK → `resources.id`  
-- `progress` — float, по умолчанию 0.0
-
-Связи:
-- `mental_plan` — many-to-one к `MentalPlan`  
-- `resource` — many-to-one к `Resource`
-
----
-
-### OuterTask
-- `id` — integer, PK, autoincrement  
-- `user_id` — FK → `users.id`  
-- `title` — string, обязательное  
-- `status` — boolean, по умолчанию `false`
-
-Связи:
-- `user` — many-to-one к `User`
-
----
-
-## Схема связей (кратко)
-- `User` 1:N `PhysicalPlan`  
-- `User` 1:N `MentalPlan`  
-- `User` 1:N `OuterTask`  
-- `PhysicalPlan` 1:N `Workout`  
-- `Workout` 1:N `WorkoutExercise`  
-- `Exercise` 1:N `WorkoutExercise`  
-- `MentalPlan` 1:N `MentalPlanResource`  
-- `Resource` 1:N `MentalPlanResource`
-
----
-
-## API (основные эндпоинты)
-
-Аутентификация (`/users/`):
-- `POST /users/` — регистрация  
-- `POST /users/signIn` — логин, возврат JWT
-
-Фитнес-планы (`/physicalPlans/`):
-- `POST /physicalPlans/` — создать план  
-- `PATCH /physicalPlans/{id}` — обновить план  
-- `GET /users/{id}/physical-plan` — получить план пользователя
-
-Ментальные планы (`/mentalPlans/`):
-- `POST /mentalPlans/` — создать план  
-- `PATCH /mentalPlans/{id}` — обновить план  
-- `GET /users/{id}/mental-plan` — получить план пользователя
-
-Ресурсы (`/resources/`):
-- `POST /resources/` — создать ресурс  
-- `POST /resources/bulk/` — массовое создание  
-- `PATCH /resources/{id}` — обновление ресурса / прогресса  
-- `DELETE /resources/{id}` — удалить ресурс
-
-Задачи (`/outherTasks/`):
-- `GET /outherTasks/`  
-- `POST /outherTasks/`  
-- `PATCH /outherTasks/{id}`  
-- `DELETE /outherTasks/{id}`
-
----
-
-## Аутентификация и безопасность
-
-- JWT для авторизации; токен создаётся на логине и используется в заголовке `Authorization: Bearer <token>`.  
-- Пароли хранятся в виде хэшей (bcrypt).  
-- Endpoints защищаются через зависимость (Depends) и валидацию токена.  
-- CORS: в development допускаются все источники, в production указывать конкретные домены.
-
----
-
-## Асинхронность и оптимизация
-
-Рекомендации по БД и ORM:
-- Использовать асинхронную работу SQLAlchemy 2.0 + asyncpg для PostgreSQL.  
-- Применять connection pooling и eager-loading (joinedload) для избежания N+1.  
-- Кэшировать тяжёлые/часто используемые запросы (Redis) при необходимости.  
-- Писать оптимизированные запросы, минимизируя количество round-trip к БД.
-
----
-
-## Конфигурация (пример `.env`)
-
-    DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/stepwise
-    JWT_SECRET_KEY=your-super-secret-key
-    JWT_ALGORITHM=HS256
-    ACCESS_TOKEN_EXPIRE_MINUTES=30
-
----
-
-## Docker и деплой
-
-Пример `Dockerfile` :
-```docker
-# Используем официальный Python образ
-FROM python:3.11-slim
-
-# Устанавливаем необходимые системные зависимости
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpq-dev \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
-# Устанавливаем Poetry (менеджер зависимостей)
-RUN curl -sSL https://install.python-poetry.org | python3 -
-
-# Добавляем путь к Poetry в PATH
-ENV PATH="/root/.local/bin:$PATH"
-
-# Создаём рабочую директорию в контейнере
-WORKDIR /app
-
-# Копируем скрипт wait-for-it.sh
-COPY wait-for-it.sh /app/wait-for-it.sh
-
-# Копируем файлы проекта
-COPY . /app/
-
-# Устанавливаем зависимости через Poetry
-RUN poetry install --no-interaction --no-ansi
-
-# Строка подключения к базе данных
-ENV DATABASE_URL=postgresql+asyncpg://application_user:application_user_password@postgres:5432/my_plan_application_db
-
-# Делаем скрипт wait-for-it.sh исполнимым
-RUN chmod +x /app/wait-for-it.sh
-
-# Запускаем приложение через Uvicorn
-CMD ["/app/wait-for-it.sh", "postgres:5432", "--", "poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```text
+project-root/
+├── app/                        # Main Application Core
+│   ├── auth/                   # Security, JWT, and Auth Logic
+│   ├── core/                   # Global Config & DB Engine
+│   ├── models/                 # SQLAlchemy 2.0 Declarative Models
+│   ├── routers/                # FastAPI Endpoints (Modules: Physical, Mental, Tasks)
+│   ├── schemas/                # Pydantic Data Validation Models
+│   └── main.py                 # Application Entry Point
+├── migrations/                 # Alembic Database Revisions
+├── Dockerfile                  # Production Environment Config
+├── docker-compose.yml          # Local Orchestration
+└── pyproject.toml              # Dependency Management (Poetry)
 ```
-Миграции Alembic:
-- Создание: `alembic revision --autogenerate -m "init"`  
-- Применение: `alembic upgrade head`
 
 ---
 
-## Мониторинг и производительность
+## 🧬 Database Schema & Relationships
 
-- Асинхронные обработчики (async/await).  
-- Connection pooling для PostgreSQL.  
-- Eager loading и оптимизированные JOIN'ы.  
-- Pydantic-схемы для быстрой и корректной валидации.  
-- План интеграции Redis, Prometheus и Grafana.
+The backend manages three primary domains linked to a centralized **User** entity:
+
+```mermaid
+erDiagram
+    USER ||--o{ PHYSICAL_PLAN : "creates"
+    USER ||--o{ MENTAL_PLAN : "creates"
+    USER ||--o{ OUTER_TASK : "tracks"
+    
+    PHYSICAL_PLAN ||--o{ WORKOUT : "contains"
+    WORKOUT ||--o{ WORKOUT_EXERCISE : "includes"
+    EXERCISE ||--o{ WORKOUT_EXERCISE : "assigned to"
+    
+    MENTAL_PLAN ||--o{ MENTAL_PLAN_RESOURCE : "aggregates"
+    RESOURCE ||--o{ MENTAL_PLAN_RESOURCE : "linked to"
+```
+
+### **Core Entities:**
+- **Physical Tracking:** Manages metrics like BMI, weight, and adaptive workout progressions.
+- **Mental Wellness:** Tracks educational resources (books, courses, videos) and learning progress.
+- **Task Management:** A flexible CRUD system for external daily objectives.
 
 ---
 
-## Roadmap / планы развития
+## 🛠️ Performance & Optimization
 
-- Redis для кэширования и ускорения ответов.  
-- WebSocket / SSE для real-time уведомлений.  
-- Background tasks (Celery/BackgroundTasks) для тяжёлых операций.  
-- Rate limiting (защита от злоупотреблений).  
-- Миграция на Type Hints / stricter typing и добавление тестов покрытия.
+- **Connection Pooling:** Optimized database connections using SQLAlchemy's async pool.
+- **Eager Loading:** Implements `joinedload` and `selectinload` strategies to eliminate N+1 query problems.
+- **Pydantic V2:** High-speed data validation and serialization.
+- **Async Interceptors:** Middleware and dependency-based security checks for low-latency authorization.
 
+---
 
+## 🚦 Quick Start
 
+### 1. Local Environment
+```bash
+# Clone the repository
+git clone [https://github.com/VRaitzev/Stepwise_backend.git](https://github.com/VRaitzev/Stepwise_backend.git)
+cd stepwise-backend
+
+# Install dependencies via Poetry
+poetry install
+
+# Start the dev server
+uvicorn app.main:app --reload
+```
+
+### 2. Docker Deployment
+```bash
+docker-compose up --build
+```
+*API accessible at `http://localhost:8000`. Interactive docs at `/docs` (Swagger) and `/redoc`.*
+
+---
+
+## 📈 Roadmap
+
+- [ ] **Caching Layer:** Integration with Redis for high-frequency data.
+- [ ] **Real-time Engine:** WebSocket support for live progress notifications.
+- [ ] **Background Processing:** Celery/Redis for handling long-running analytical tasks.
+- [ ] **Advanced Monitoring:** Integration with Prometheus and Grafana.
+
+---
+
+## 🛡️ Security Implementation
+
+- **Encryption:** `Passlib` with `bcrypt` for industry-standard hashing.
+- **Tokenization:** Stateless JWT tokens with configurable expiration and automatic verification layers.
+- **Data Integrity:** Strict Pydantic schemas prevent SQL injection and data leakage.
